@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Checkout</title>
+<meta name="description" content="A little grocery-store checkout simulation: watch lines form through a shopping day and compare line setups.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=0.1.0">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">5</span>
+      <div>
+        <h1>Checkout</h1>
+        <p class="sub" id="sub">Day 1 · Morning</p>
+      </div>
+    </div>
+    <div class="top-right">
+      <div class="clock" id="clock">8:00 <span>AM</span></div>
+      <div class="seg speed" role="group" aria-label="Speed">
+        <button type="button" data-speed="1" class="on">1×</button>
+        <button type="button" data-speed="2">2×</button>
+        <button type="button" data-speed="4">4×</button>
+      </div>
+      <button type="button" class="speed-cycle" id="speedCycle" aria-label="Speed, tap to change">1×</button>
+      <button type="button" class="pause" id="pause">Pause</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="floor" id="floor">
+      <canvas id="store" role="img" aria-label="Top-down view of the store: aisles at the top, checkout lanes below, exit at the bottom."></canvas>
+      <div class="toast" id="toast" hidden></div>
+    </div>
+
+    <aside class="panel" id="panel" aria-label="Scoreboard and store setup">
+      <div class="sheet-head">
+        <span>Store</span>
+        <button type="button" class="close" id="closeSheet" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <section class="board">
+        <dl class="stats">
+          <div><dt>Avg wait · last hour</dt><dd id="sAvg" class="hot">0:00</dd></div>
+          <div><dt>Worst today</dt><dd id="sWorst">0:00</dd></div>
+          <div><dt>Staff cost</dt><dd id="sCost">$0/hr</dd></div>
+          <div><dt>Mood today</dt><dd id="sMood">100%</dd></div>
+          <div><dt>Walkouts today</dt><dd id="sWalk" class="warn">0</dd></div>
+          <div><dt>In store</dt><dd id="sIn">0</dd></div>
+        </dl>
+        <div class="chart-head">Avg wait by hour today</div>
+        <div class="chart" id="chart" aria-hidden="true"></div>
+        <div class="chart-axis" aria-hidden="true"><span>8 AM</span><span>3 PM</span><span>9 PM</span></div>
+      </section>
+
+      <section class="setup">
+        <div>
+          <div class="label" id="lineLabel">Line style</div>
+          <div class="seg wide" role="group" aria-labelledby="lineLabel">
+            <button type="button" data-line="own">Line per register</button>
+            <button type="button" data-line="shared">One shared line</button>
+          </div>
+        </div>
+        <div class="row">
+          <span id="regLabel">Registers open</span>
+          <span class="stepper" role="group" aria-labelledby="regLabel">
+            <button type="button" id="regMinus" aria-label="One fewer register">−</button>
+            <b id="regCount">4</b>
+            <button type="button" id="regPlus" aria-label="One more register">+</button>
+          </span>
+        </div>
+        <label class="row"><span>Express lane <small>(15 items or fewer)</small></span><input type="checkbox" id="express"></label>
+        <label class="row"><span>Self-checkout <small>(4 kiosks)</small></span><input type="checkbox" id="self"></label>
+        <div>
+          <div class="label" id="busyLabel">Shoppers</div>
+          <div class="seg wide" role="group" aria-labelledby="busyLabel">
+            <button type="button" data-busy="0.65">Quiet</button>
+            <button type="button" data-busy="1">Normal</button>
+            <button type="button" data-busy="1.4">Packed</button>
+          </div>
+        </div>
+        <details class="about">
+          <summary>About the numbers</summary>
+          <p>All made up but kept roughly realistic. A cashier scans an item every 2.5 seconds plus
+            about a minute to start and pay; self-checkout is half as fast per item and sometimes needs
+            the attendant. Each cashier or attendant costs $16/hr and each kiosk $4/hr. Mood starts at
+            100% and drops 8 points per minute once a wait passes 2 minutes; when someone runs out of
+            patience (6 to 14 minutes) they leave their cart and walk out.</p>
+          <p>"Wait" is the time from joining a line to being called to a register.</p>
+        </details>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="bar" aria-label="Quick stats">
+    <dl>
+      <div><dt>Avg wait</dt><dd id="bAvg" class="hot">0:00</dd></div>
+      <div><dt>Mood</dt><dd id="bMood">100%</dd></div>
+      <div><dt>Staff</dt><dd id="bCost">$0/h</dd></div>
+    </dl>
+    <button type="button" class="icon" id="pauseBar" aria-label="Pause">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="3.5" height="12" rx="1" fill="currentColor"/><rect x="9.5" y="2" width="3.5" height="12" rx="1" fill="currentColor"/></svg>
+    </button>
+    <button type="button" class="controls" id="openSheet" aria-controls="panel" aria-expanded="false">Controls</button>
+  </footer>
+  <div class="scrim" id="scrim" hidden></div>
+</div>
+<script src="sim.js?v=0.1.0"></script>
+<script src="view.js?v=0.1.0"></script>
+</body>
+</html>
